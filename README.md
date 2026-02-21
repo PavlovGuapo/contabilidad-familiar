@@ -1,70 +1,32 @@
-# Getting Started with Create React App
+# Contabilidad Familiar
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Esta es una aplicación web tipo Single Page Application (SPA) diseñada para llevar el control de las finanzas de un hogar. La herramienta se enfoca en la privacidad absoluta del usuario. Toda la información financiera se almacena directamente en el navegador mediante `localStorage`. No existe conexión con servidores externos ni bases de datos en la nube, lo que significa que los datos nunca abandonan el dispositivo donde se ejecuta la aplicación.
 
-## Available Scripts
+### Características Principales
 
-In the project directory, you can run:
+| Función | Descripción |
+| :--- | :--- |
+| **Almacenamiento Local** | Los datos persisten en el navegador sin requerir internet. |
+| **Gestión Multi-usuario** | Calcula balances individuales separando los gastos e ingresos de cada miembro. |
+| **Análisis Visual** | Renderiza gráficas de barras para comparativas anuales y gráficos circulares para la distribución de gastos. |
+| **Respaldo Portátil** | Genera archivos JSON para descargar la información y cargarla en otros dispositivos. |
+| **Portabilidad Docker** | Se ejecuta desde un contenedor Nginx ligero, sin depender de instalaciones locales de Node.js. |
 
-### `npm start`
+### Tecnologías Utilizadas
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+| Herramienta | Propósito en el proyecto |
+| :--- | :--- |
+| **React** | Lógica de la interfaz de usuario y manejo de estado. |
+| **Tailwind CSS** | Sistema de diseño y utilidades de estilo. |
+| **Recharts** | Generación de gráficos financieros interactivos. |
+| **Lucide React** | Biblioteca de iconos vectoriales. |
+| **Docker** | Contenerización mediante un multi-stage build con Nginx y Alpine Linux. |
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Ejecución con Docker
 
-### `npm test`
+Para correr la aplicación utilizando contenedores, es necesario tener instalado el motor de Docker en el sistema. El proceso de construcción toma el código fuente y genera una imagen estática lista para producción. 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Primero se debe construir la imagen ejecutando este comando en la raíz del proyecto. Esto descargará las dependencias y compilará la aplicación:
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+docker build -t contabilidad-familiar .
