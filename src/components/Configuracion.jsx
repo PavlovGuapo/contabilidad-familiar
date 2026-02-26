@@ -1,158 +1,74 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Download, Upload } from 'lucide-react';
+import { Plus, Trash2, Download, Upload, Target, FileSpreadsheet, Shield, ShieldOff } from 'lucide-react';
 
 export default function Configuracion({ finanzas, cerrarConfiguracion }) {
   const {
-    COLORES_DISPONIBLES, personas, setPersonas, seccionesIngresos, setSeccionesIngresos,
-    seccionesGastos, setSeccionesGastos, ingresos, setIngresos, gastosFijos, setGastosFijos,
-    exportarDatos, importarDatos, formatearMoneda
+    COLORES_DISPONIBLES, personas, setPersonas, seccionesIngresos, setSeccionesIngresos, seccionesGastos, setSeccionesGastos,
+    ingresos, setIngresos, gastosFijos, setGastosFijos, metasAhorro, setMetasAhorro, t,
+    exportarDatos, exportarCSV, importarDatos, formatearMoneda, configurarPassword, passwordActual
   } = finanzas;
 
   const [nuevaPersona, setNuevaPersona] = useState({ nombre: '', color: COLORES_DISPONIBLES[0] });
-  const [nuevoGastoFijo, setNuevoGastoFijo] = useState({
-    descripcion: '', monto: '', personaId: '', periodicidadMeses: '1', fechaInicio: new Date().toISOString().split('T')[0]
-  });
+  const [nuevoGastoFijo, setNuevoGastoFijo] = useState({ descripcion: '', monto: '', personaId: '', periodicidadMeses: '1', fechaInicio: new Date().toISOString().split('T')[0] });
+  const [nuevaMeta, setNuevaMeta] = useState({ nombre: '', montoObjetivo: '' });
+  const [inputPassword, setInputPassword] = useState('');
 
-  const agregarPersona = () => {
-    if (nuevaPersona.nombre.trim()) {
-      setPersonas([...personas, { id: Date.now().toString(), nombre: nuevaPersona.nombre, color: nuevaPersona.color }]);
-      setNuevaPersona({ nombre: '', color: COLORES_DISPONIBLES[0] });
-    }
-  };
+  const manejarPassword = () => { configurarPassword(inputPassword); setInputPassword(''); };
+  const agregarPersona = () => { if (nuevaPersona.nombre.trim()) { setPersonas([...personas, { id: Date.now().toString(), nombre: nuevaPersona.nombre, color: nuevaPersona.color }]); setNuevaPersona({ nombre: '', color: COLORES_DISPONIBLES[0] }); } };
   const eliminarPersona = (id) => setPersonas(personas.filter(p => p.id !== id));
-
-  const agregarGastoFijo = () => {
-    if(!nuevoGastoFijo.descripcion || !nuevoGastoFijo.monto || !nuevoGastoFijo.personaId) return;
-    setGastosFijos([...gastosFijos, { ...nuevoGastoFijo, id: Date.now().toString(), monto: parseFloat(nuevoGastoFijo.monto) }]);
-    setNuevoGastoFijo({ descripcion: '', monto: '', personaId: '', periodicidadMeses: '1', fechaInicio: new Date().toISOString().split('T')[0] });
-  };
+  const agregarGastoFijo = () => { if(!nuevoGastoFijo.descripcion || !nuevoGastoFijo.monto || !nuevoGastoFijo.personaId) return; setGastosFijos([...gastosFijos, { ...nuevoGastoFijo, id: Date.now().toString(), monto: parseFloat(nuevoGastoFijo.monto) }]); setNuevoGastoFijo({ descripcion: '', monto: '', personaId: '', periodicidadMeses: '1', fechaInicio: new Date().toISOString().split('T')[0] }); };
   const eliminarGastoFijo = (id) => setGastosFijos(gastosFijos.filter(g => g.id !== id));
-
-  const agregarSeccionIngreso = () => setSeccionesIngresos([...seccionesIngresos, { id: Date.now().toString(), nombre: 'Nueva Sección', subsecciones: [] }]);
-  const agregarSubseccionIngreso = (seccionId) => setSeccionesIngresos(seccionesIngresos.map(s => s.id === seccionId ? { ...s, subsecciones: [...s.subsecciones, { id: Date.now().toString(), nombre: 'Concepto' }] } : s));
-  const actualizarIngresoMensual = (personaId, subseccionId, mes, valor) => setIngresos({ ...ingresos, [`${personaId}-${mes}-${subseccionId}`]: parseFloat(valor) || 0 });
-
-  const agregarSeccionGasto = () => setSeccionesGastos([...seccionesGastos, { id: Date.now().toString(), nombre: 'Nueva Categoría', color: COLORES_DISPONIBLES[seccionesGastos.length % COLORES_DISPONIBLES.length], subsecciones: [] }]);
-  const agregarSubseccionGasto = (seccionId) => setSeccionesGastos(seccionesGastos.map(s => s.id === seccionId ? { ...s, subsecciones: [...s.subsecciones, { id: Date.now().toString(), nombre: 'Subcategoría', gastos: [] }] } : s));
+  const agregarMeta = () => { if (!nuevaMeta.nombre || !nuevaMeta.montoObjetivo) return; setMetasAhorro([...metasAhorro, { id: Date.now().toString(), nombre: nuevaMeta.nombre, montoObjetivo: parseFloat(nuevaMeta.montoObjetivo), montoAhorrado: 0 }]); setNuevaMeta({ nombre: '', montoObjetivo: '' }); };
+  const eliminarMeta = (id) => setMetasAhorro(metasAhorro.filter(m => m.id !== id));
+  const agregarSeccionIngreso = () => setSeccionesIngresos([...seccionesIngresos, { id: Date.now().toString(), nombre: t('nueva_seccion_ingreso'), subsecciones: [] }]);
+  const agregarSubseccionIngreso = (seccionId) => setSeccionesIngresos(seccionesIngresos.map(s => s.id === seccionId ? { ...s, subsecciones: [...s.subsecciones, { id: Date.now().toString(), nombre: t('concepto') }] } : s));
+  const agregarSeccionGasto = () => setSeccionesGastos([...seccionesGastos, { id: Date.now().toString(), nombre: t('nueva_categoria_gasto'), limite: 0, color: COLORES_DISPONIBLES[seccionesGastos.length % COLORES_DISPONIBLES.length], subsecciones: [] }]);
+  const agregarSubseccionGasto = (seccionId) => setSeccionesGastos(seccionesGastos.map(s => s.id === seccionId ? { ...s, subsecciones: [...s.subsecciones, { id: Date.now().toString(), nombre: t('subcategoria'), gastos: [] }] } : s));
 
   return (
-    <div className="min-h-screen bg-stone-50 p-8">
+    <div className="min-h-screen bg-stone-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto bg-white rounded-3xl border border-slate-200 overflow-hidden">
-        <div className="bg-slate-900 text-white p-8">
-          <div className="flex justify-between items-center mb-6">
-              <h1 className="text-3xl font-bold">Configuración</h1>
-              <button onClick={cerrarConfiguracion} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white font-medium">Guardar y Salir</button>
+        <div className="bg-slate-900 text-white p-6 md:p-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+              <h1 className="text-3xl font-bold">{t('configuracion')}</h1>
+              <button onClick={cerrarConfiguracion} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white font-medium">{t('guardar_salir')}</button>
           </div>
-          <div className="flex gap-4 p-4 bg-slate-800 rounded-xl">
-              <button onClick={exportarDatos} className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white text-sm"><Download className="w-4 h-4" /> Exportar</button>
-              <label className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white text-sm cursor-pointer"><Upload className="w-4 h-4" /> Importar<input type="file" onChange={(e) => importarDatos(e)} className="hidden" accept=".json" /></label>
+          <div className="flex flex-wrap gap-4 p-4 bg-slate-800 rounded-xl items-center">
+              <button onClick={exportarDatos} className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white text-sm"><Download className="w-4 h-4" /> {t('respaldo_json')}</button>
+              <label className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white text-sm cursor-pointer"><Upload className="w-4 h-4" /> {t('importar')}<input type="file" onChange={(e) => importarDatos(e)} className="hidden" accept=".json" /></label>
+              <div className="hidden md:block w-px h-6 bg-slate-600 mx-2"></div>
+              <button onClick={exportarCSV} className="flex items-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 rounded-lg text-white text-sm"><FileSpreadsheet className="w-4 h-4" /> {t('exportar_csv')}</button>
           </div>
         </div>
 
-        <div className="p-8 space-y-12">
+        <div className="p-4 md:p-8 space-y-12">
           <section>
-              <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><div className="w-8 h-1 bg-slate-500 rounded-full"></div> Miembros</h2>
-              <div className="flex flex-wrap gap-4 items-end bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                <div className="flex-1 min-w-[200px]">
-                  <div className="flex gap-2">
-                      <input type="text" placeholder="Nombre" value={nuevaPersona.nombre} onChange={(e) => setNuevaPersona({ ...nuevaPersona, nombre: e.target.value })} className="flex-1 px-4 py-2 border border-slate-200 rounded-lg outline-none" />
-                      <input type="color" value={nuevaPersona.color} onChange={(e) => setNuevaPersona({ ...nuevaPersona, color: e.target.value })} className="h-10 w-12 p-1 bg-white border border-slate-200 rounded-lg cursor-pointer" />
-                      <button onClick={agregarPersona} className="p-2 bg-slate-800 text-white rounded-lg"><Plus className="w-6 h-6" /></button>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {personas.map(persona => (
-                    <div key={persona.id} className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-full">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: persona.color }} />
-                      <span className="font-medium text-slate-700">{persona.nombre}</span>
-                      <button onClick={() => eliminarPersona(persona.id)} className="text-slate-400 hover:text-slate-800"><Trash2 className="w-4 h-4" /></button>
+              <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><div className="w-8 h-1 bg-slate-500 rounded-full"></div> {t('seguridad_local')}</h2>
+              <div className="flex flex-col md:flex-row gap-4 md:items-center bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                <div className="flex items-center gap-4 flex-1">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${passwordActual ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                        {passwordActual ? <Shield className="w-6 h-6" /> : <ShieldOff className="w-6 h-6" />}
                     </div>
-                  ))}
+                    <div>
+                        <p className="font-bold text-slate-800">{t('cifrado_almacenamiento')}</p>
+                        <p className="text-sm text-slate-500">{passwordActual ? t('cifrado_desc1') : t('cifrado_desc2')}</p>
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-2 w-full md:w-auto mt-2 md:mt-0">
+                    <input type="password" placeholder={passwordActual ? t('nueva_pass') : t('crear_pass')} value={inputPassword} onChange={e => setInputPassword(e.target.value)} className="flex-1 px-4 py-2 border rounded-lg outline-none min-w-[150px]" />
+                    <button onClick={manejarPassword} className="px-4 py-2 bg-slate-800 text-white rounded-lg whitespace-nowrap">{passwordActual ? t('actualizar') : t('activar')}</button>
+                    {passwordActual && <button onClick={() => configurarPassword(null)} className="px-4 py-2 bg-rose-100 text-rose-700 rounded-lg font-medium">{t('quitar')}</button>}
                 </div>
               </div>
           </section>
 
-          <section>
-            <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><div className="w-8 h-1 bg-slate-500 rounded-full"></div> Gastos Fijos</h2>
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-4">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
-                <input type="text" placeholder="Descripción" value={nuevoGastoFijo.descripcion} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, descripcion: e.target.value})} className="px-3 py-2 border rounded-lg md:col-span-2" />
-                <input type="number" placeholder="Monto" value={nuevoGastoFijo.monto} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, monto: e.target.value})} className="px-3 py-2 border rounded-lg" />
-                <select value={nuevoGastoFijo.personaId} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, personaId: e.target.value})} className="px-3 py-2 border rounded-lg">
-                  <option value="">Quién paga...</option>
-                  {personas.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                </select>
-                <select value={nuevoGastoFijo.periodicidadMeses} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, periodicidadMeses: e.target.value})} className="px-3 py-2 border rounded-lg">
-                  <option value="1">Mensual</option><option value="2">Bimestral</option><option value="3">Trimestral</option><option value="6">Semestral</option><option value="12">Anual</option>
-                </select>
-              </div>
-              <div className="flex gap-3 items-center">
-                <label className="text-sm text-slate-600 font-medium">Primer cobro:</label>
-                <input type="date" value={nuevoGastoFijo.fechaInicio} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, fechaInicio: e.target.value})} className="px-3 py-2 border rounded-lg flex-1 md:flex-none" />
-                <button onClick={agregarGastoFijo} className="px-6 py-2 bg-slate-800 text-white rounded-lg ml-auto">Agregar</button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {gastosFijos.map(g => (
-                <div key={g.id} className="flex justify-between items-center p-3 border rounded-lg bg-white">
-                  <div>
-                    <p className="font-bold text-slate-700">{g.descripcion} <span className="font-normal text-slate-500 ml-2">{formatearMoneda(g.monto)}</span></p>
-                    <p className="text-xs text-slate-400">Inicia: {g.fechaInicio} | Cada {g.periodicidadMeses} mes(es)</p>
-                  </div>
-                  <button onClick={() => eliminarGastoFijo(g.id)} className="text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                </div>
-              ))}
-            </div>
-          </section>
+          <section><h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><div className="w-8 h-1 bg-slate-500 rounded-full"></div> {t('miembros')}</h2><div className="flex flex-col gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-200"><div className="w-full"><div className="flex flex-wrap gap-2"><input type="text" placeholder={t('nombre')} value={nuevaPersona.nombre} onChange={(e) => setNuevaPersona({ ...nuevaPersona, nombre: e.target.value })} className="flex-1 px-4 py-2 border border-slate-200 rounded-lg outline-none min-w-[150px]" /><input type="color" value={nuevaPersona.color} onChange={(e) => setNuevaPersona({ ...nuevaPersona, color: e.target.value })} className="h-10 w-12 p-1 bg-white border border-slate-200 rounded-lg cursor-pointer shrink-0" /><button onClick={agregarPersona} className="p-2 bg-slate-800 text-white rounded-lg shrink-0"><Plus className="w-6 h-6" /></button></div></div><div className="flex flex-wrap gap-3">{personas.map(persona => (<div key={persona.id} className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-full"><div className="w-4 h-4 rounded-full" style={{ backgroundColor: persona.color }} /><span className="font-medium text-slate-700">{persona.nombre}</span><button onClick={() => eliminarPersona(persona.id)} className="text-slate-400 hover:text-slate-800"><Trash2 className="w-4 h-4" /></button></div>))}</div></div></section>
+          
+          <section><h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><div className="w-8 h-1 bg-slate-500 rounded-full"></div> {t('gastos_fijos')}</h2><div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-4"><div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3"><input type="text" placeholder={t('descripcion')} value={nuevoGastoFijo.descripcion} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, descripcion: e.target.value})} className="px-3 py-2 border rounded-lg md:col-span-2" /><input type="number" placeholder={t('monto')} value={nuevoGastoFijo.monto} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, monto: e.target.value})} className="px-3 py-2 border rounded-lg" /><select value={nuevoGastoFijo.personaId} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, personaId: e.target.value})} className="px-3 py-2 border rounded-lg"><option value="">{t('quien_paga')}</option>{personas.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select><select value={nuevoGastoFijo.periodicidadMeses} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, periodicidadMeses: e.target.value})} className="px-3 py-2 border rounded-lg"><option value="1">{t('mensual')}</option><option value="2">{t('bimestral')}</option><option value="3">{t('trimestral')}</option><option value="6">{t('semestral')}</option><option value="12">{t('anual')}</option></select></div><div className="flex flex-col md:flex-row gap-3 md:items-center"><label className="text-sm text-slate-600 font-medium shrink-0">{t('primer_cobro')}</label><input type="date" value={nuevoGastoFijo.fechaInicio} onChange={e => setNuevoGastoFijo({...nuevoGastoFijo, fechaInicio: e.target.value})} className="px-3 py-2 border rounded-lg flex-1" /><button onClick={agregarGastoFijo} className="px-6 py-2 bg-slate-800 text-white rounded-lg w-full md:w-auto">{t('agregar_gasto_variable').split(' ')[0]}</button></div></div><div className="space-y-2">{gastosFijos.map(g => (<div key={g.id} className="flex justify-between items-center p-3 border rounded-lg bg-white"><div><p className="font-bold text-slate-700">{g.descripcion} <span className="font-normal text-slate-500 ml-2">{formatearMoneda(g.monto)}</span></p><p className="text-xs text-slate-400">{t('inicia')} {g.fechaInicio} | {t('cada')} {g.periodicidadMeses} {t('meses')}</p></div><button onClick={() => eliminarGastoFijo(g.id)} className="text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button></div>))}</div></section>
 
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><div className="w-8 h-1 bg-slate-500 rounded-full"></div> Ingresos y Categorías</h2>
-              <div className="flex gap-2">
-                <button onClick={agregarSeccionIngreso} className="text-sm px-3 py-1.5 bg-slate-200 text-slate-800 rounded-lg">Nueva Sección Ingreso</button>
-                <button onClick={agregarSeccionGasto} className="text-sm px-3 py-1.5 bg-slate-200 text-slate-800 rounded-lg">Nueva Categoría Gasto</button>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="font-bold text-slate-700">Ingresos</h3>
-                  {seccionesIngresos.map(seccion => (
-                    <div key={seccion.id} className="border border-slate-200 rounded-xl overflow-hidden">
-                      <div className="bg-slate-100 p-3 flex gap-4 items-center">
-                        <input type="text" value={seccion.nombre} onChange={(e) => setSeccionesIngresos(seccionesIngresos.map(s => s.id === seccion.id ? { ...s, nombre: e.target.value } : s))} className="font-bold bg-transparent outline-none w-full" />
-                        <button onClick={() => agregarSubseccionIngreso(seccion.id)} className="text-xs px-2 py-1 bg-white border rounded">Concepto</button>
-                      </div>
-                      <div className="p-3 bg-white space-y-2">
-                        {seccion.subsecciones.map(subseccion => (
-                          <div key={subseccion.id} className="flex items-center px-3 py-2 bg-slate-50 border rounded">
-                            <input type="text" value={subseccion.nombre} onChange={(e) => setSeccionesIngresos(seccionesIngresos.map(s => s.id === seccion.id ? { ...s, subsecciones: s.subsecciones.map(sub => sub.id === subseccion.id ? { ...sub, nombre: e.target.value } : sub) } : s))} className="bg-transparent outline-none w-full text-sm" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-4">
-                  <h3 className="font-bold text-slate-700">Gastos Variables</h3>
-                  {seccionesGastos.map(seccion => (
-                    <div key={seccion.id} className="border border-slate-200 rounded-xl overflow-hidden">
-                      <div className="p-3 flex items-center gap-3 bg-slate-100">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: seccion.color }} />
-                          <input type="text" value={seccion.nombre} onChange={(e) => setSeccionesGastos(seccionesGastos.map(s => s.id === seccion.id ? { ...s, nombre: e.target.value } : s))} className="font-bold bg-transparent outline-none flex-1" />
-                          <button onClick={() => agregarSubseccionGasto(seccion.id)} className="p-1"><Plus className="w-4 h-4" /></button>
-                      </div>
-                      <div className="p-3 bg-white space-y-2">
-                          {seccion.subsecciones.map(subseccion => (
-                          <div key={subseccion.id} className="flex items-center px-3 py-2 bg-slate-50 border rounded">
-                              <input type="text" value={subseccion.nombre} onChange={(e) => setSeccionesGastos(seccionesGastos.map(s => s.id === seccion.id ? { ...s, subsecciones: s.subsecciones.map(sub => sub.id === subseccion.id ? { ...sub, nombre: e.target.value } : sub) } : s))} className="bg-transparent outline-none w-full text-sm" />
-                          </div>
-                          ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-            </div>
-          </section>
+          <section><h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><div className="w-8 h-1 bg-slate-500 rounded-full"></div> {t('metas_ahorro')}</h2><div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-4"><div className="flex flex-col md:flex-row gap-3 items-center"><input type="text" placeholder={t('nombre_meta')} value={nuevaMeta.nombre} onChange={e => setNuevaMeta({...nuevaMeta, nombre: e.target.value})} className="px-3 py-2 border rounded-lg w-full md:flex-1" /><input type="number" placeholder={t('monto_objetivo')} value={nuevaMeta.montoObjetivo} onChange={e => setNuevaMeta({...nuevaMeta, montoObjetivo: e.target.value})} className="px-3 py-2 border rounded-lg w-full md:w-40" /><button onClick={agregarMeta} className="px-6 py-2 bg-slate-800 text-white rounded-lg w-full md:w-auto"><Plus className="w-5 h-5 mx-auto" /></button></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{metasAhorro.map(m => (<div key={m.id} className="flex justify-between items-center p-4 border rounded-xl bg-white shadow-sm"><div className="flex gap-3 items-center"><div className="w-10 h-10 bg-slate-100 rounded-full flex justify-center items-center shrink-0"><Target className="w-5 h-5 text-slate-600" /></div><div className="overflow-hidden"><p className="font-bold text-slate-700 truncate">{m.nombre}</p><p className="text-sm text-slate-500 truncate">{t('meta')} {formatearMoneda(m.montoObjetivo)}</p></div></div><button onClick={() => eliminarMeta(m.id)} className="text-slate-400 hover:text-red-500 shrink-0"><Trash2 className="w-5 h-5" /></button></div>))}</div></section>
+
+          <section><div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4"><h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><div className="w-8 h-1 bg-slate-500 rounded-full"></div> {t('ingresos_categorias')}</h2><div className="flex gap-2"><button onClick={agregarSeccionIngreso} className="text-sm px-3 py-1.5 bg-slate-200 text-slate-800 rounded-lg">{t('nueva_seccion_ingreso')}</button><button onClick={agregarSeccionGasto} className="text-sm px-3 py-1.5 bg-slate-200 text-slate-800 rounded-lg">{t('nueva_categoria_gasto')}</button></div></div><div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><div className="space-y-4"><h3 className="font-bold text-slate-700">{t('ingresos')}</h3>{seccionesIngresos.map(seccion => (<div key={seccion.id} className="border border-slate-200 rounded-xl overflow-hidden"><div className="bg-slate-100 p-3 flex gap-4 items-center"><input type="text" value={seccion.nombre} onChange={(e) => setSeccionesIngresos(seccionesIngresos.map(s => s.id === seccion.id ? { ...s, nombre: e.target.value } : s))} className="font-bold bg-transparent outline-none w-full" /><button onClick={() => agregarSubseccionIngreso(seccion.id)} className="text-xs px-2 py-1 bg-white border rounded shrink-0">{t('concepto')}</button></div><div className="p-3 bg-white space-y-2">{seccion.subsecciones.map(subseccion => (<div key={subseccion.id} className="flex items-center px-3 py-2 bg-slate-50 border rounded"><input type="text" value={subseccion.nombre} onChange={(e) => setSeccionesIngresos(seccionesIngresos.map(s => s.id === seccion.id ? { ...s, subsecciones: s.subsecciones.map(sub => sub.id === subseccion.id ? { ...sub, nombre: e.target.value } : sub) } : s))} className="bg-transparent outline-none w-full text-sm" /></div>))}</div></div>))}</div><div className="space-y-4"><h3 className="font-bold text-slate-700">{t('gastos_variables')}</h3>{seccionesGastos.map(seccion => (<div key={seccion.id} className="border border-slate-200 rounded-xl overflow-hidden"><div className="p-3 flex flex-wrap md:flex-nowrap items-center gap-3 bg-slate-100"><div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: seccion.color }} /><input type="text" value={seccion.nombre} onChange={(e) => setSeccionesGastos(seccionesGastos.map(s => s.id === seccion.id ? { ...s, nombre: e.target.value } : s))} className="font-bold bg-transparent outline-none flex-1 min-w-[100px]" /><div className="flex items-center gap-1"><span className="text-xs text-slate-500 whitespace-nowrap">{t('tope')}</span><input type="number" placeholder="0" value={seccion.limite || ''} onChange={(e) => setSeccionesGastos(seccionesGastos.map(s => s.id === seccion.id ? { ...s, limite: parseFloat(e.target.value) || 0 } : s))} className="w-20 px-1 py-1 text-sm border border-slate-300 rounded outline-none bg-white text-right" /></div><button onClick={() => agregarSubseccionGasto(seccion.id)} className="p-1"><Plus className="w-4 h-4" /></button></div><div className="p-3 bg-white space-y-2">{seccion.subsecciones.map(subseccion => (<div key={subseccion.id} className="flex items-center px-3 py-2 bg-slate-50 border rounded"><input type="text" value={subseccion.nombre} onChange={(e) => setSeccionesGastos(seccionesGastos.map(s => s.id === seccion.id ? { ...s, subsecciones: s.subsecciones.map(sub => sub.id === subseccion.id ? { ...sub, nombre: e.target.value } : sub) } : s))} className="bg-transparent outline-none w-full text-sm" /></div>))}</div></div>))}</div></div></section>
         </div>
       </div>
     </div>

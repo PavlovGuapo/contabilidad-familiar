@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 
-export default function Calendario({ mesSeleccionado, anioActual, gastosFijos, aplicaGastoFijoEnMes, formatearMoneda }) {
+export default function Calendario({ mesSeleccionado, anioActual, gastosFijos, aplicaGastoFijoEnMes, formatearMoneda, t }) {
   const obtenerDiasDelMes = (mes, anio) => new Date(anio, mes + 1, 0).getDate();
   const obtenerPrimerDiaDelMes = (mes, anio) => new Date(anio, mes, 1).getDay();
 
@@ -9,16 +9,16 @@ export default function Calendario({ mesSeleccionado, anioActual, gastosFijos, a
   const primerDia = obtenerPrimerDiaDelMes(mesSeleccionado, anioActual);
   const dias = Array.from({ length: diasTotal }, (_, i) => i + 1);
   const celdasVacias = Array.from({ length: primerDia }, (_, i) => i);
-  const nombreDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const nombreDias = [t('dom'), t('lun'), t('mar'), t('mie'), t('jue'), t('vie'), t('sab')];
 
   const gastosFijosEsteMes = gastosFijos.filter(g => aplicaGastoFijoEnMes(g, mesSeleccionado, anioActual));
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mt-6">
+    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mt-6 overflow-x-auto no-scrollbar">
       <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <Calendar className="w-5 h-5"/> Calendario de Gastos Fijos
+        <Calendar className="w-5 h-5"/> {t('calendario_fijos')}
       </h3>
-      <div className="grid grid-cols-7 gap-px bg-slate-200 rounded-lg overflow-hidden border border-slate-200">
+      <div className="min-w-[500px] grid grid-cols-7 gap-px bg-slate-200 rounded-lg overflow-hidden border border-slate-200">
         {nombreDias.map(dia => (
           <div key={dia} className="bg-slate-100 text-center py-2 text-xs font-semibold text-slate-600">{dia}</div>
         ))}
@@ -28,7 +28,7 @@ export default function Calendario({ mesSeleccionado, anioActual, gastosFijos, a
           return (
             <div key={dia} className="bg-white min-h-[80px] p-1 border-t border-slate-100 flex flex-col">
               <span className="text-xs font-medium text-slate-400 p-1">{dia}</span>
-              <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
+              <div className="flex-1 flex flex-col gap-1 overflow-y-auto max-h-16">
                 {gastosDelDia.map(g => (
                   <div key={g.id} className="text-[10px] bg-slate-700 text-white px-1.5 py-0.5 rounded truncate" title={`${g.descripcion} - ${formatearMoneda(g.monto)}`}>
                     {g.descripcion}
