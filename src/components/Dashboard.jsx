@@ -7,7 +7,8 @@ export default function Dashboard({ finanzas, vistaActual, mesSeleccionado, MESE
   const {
     COLORES_DISPONIBLES, personas, seccionesGastos, setSeccionesGastos, metasAhorro, setMetasAhorro, t,
     aplicaGastoFijoEnMes, formatearMoneda, calcularIngresosPersona, calcularGastosPersona,
-    calcularIngresosFamilia, calcularGastosFamilia, calcularGastosPorCategoria, ANIO_ACTUAL, gastosFijos
+    calcularIngresosFamilia, calcularGastosFamilia, calcularGastosPorCategoria, ANIO_ACTUAL, gastosFijos,
+    seccionesIngresos, ingresos, setIngresos
   } = finanzas;
 
   const [mostrarFormGasto, setMostrarFormGasto] = useState(false);
@@ -38,6 +39,10 @@ export default function Dashboard({ finanzas, vistaActual, mesSeleccionado, MESE
     if (!monto || monto <= 0) return;
     setMetasAhorro(metasAhorro.map(m => m.id === idMeta ? { ...m, montoAhorrado: m.montoAhorrado + monto } : m));
     setAportacion({ ...aportacion, [idMeta]: '' });
+  };
+
+  const actualizarIngresoMensual = (personaId, subseccionId, mes, valor) => {
+    setIngresos({ ...ingresos, [`${personaId}-${mes}-${subseccionId}`]: parseFloat(valor) || 0 });
   };
 
   return (
@@ -78,6 +83,34 @@ export default function Dashboard({ finanzas, vistaActual, mesSeleccionado, MESE
                   <>
                       <Calendario mesSeleccionado={mesSeleccionado} anioActual={ANIO_ACTUAL} gastosFijos={gastosFijos} aplicaGastoFijoEnMes={aplicaGastoFijoEnMes} formatearMoneda={formatearMoneda} t={t} />
                       
+                      <div className="bg-white rounded-2xl border border-slate-200 mt-6 overflow-hidden">
+                          <div className="p-4 sm:p-6 border-b border-slate-200 bg-slate-50">
+                              <h3 className="text-lg font-bold text-slate-800">{t('ingresos')} ({MESES[mesSeleccionado]})</h3>
+                          </div>
+                          <div className="p-4 sm:p-6 space-y-4">
+                              {seccionesIngresos.map(seccion => (
+                                  <div key={seccion.id} className="border border-slate-100 rounded-xl p-4 bg-slate-50">
+                                      <h4 className="font-bold text-slate-700 mb-3">{seccion.nombre}</h4>
+                                      {seccion.subsecciones.map(sub => (
+                                          <div key={sub.id} className="mb-4 last:mb-0">
+                                              <p className="text-sm font-medium text-slate-600 mb-2">{sub.nombre}</p>
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                                  {personas.map(persona => (
+                                                      <div key={persona.id} className="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                                          <span className="text-sm text-slate-500 flex-1 truncate">{persona.nombre}</span>
+                                                          <span className="text-slate-400 text-sm mx-1">$</span>
+                                                          <input type="number" placeholder="0" value={ingresos[`${persona.id}-${mesSeleccionado}-${sub.id}`] || ''} onChange={(e) => actualizarIngresoMensual(persona.id, sub.id, mesSeleccionado, e.target.value)} className="w-20 outline-none text-right text-sm" />
+                                                      </div>
+                                                  ))}
+                                              </div>
+                                          </div>
+                                      ))}
+                                  </div>
+                              ))}
+                              {seccionesIngresos.length === 0 && <p className="text-sm text-slate-400">{t('no_datos')}</p>}
+                          </div>
+                      </div>
+
                       <div className="bg-white rounded-2xl border border-slate-200 mt-6 overflow-hidden">
                           <div className="p-4 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 gap-4">
                               <h3 className="text-lg font-bold text-slate-800">{t('gastos_variables')} ({MESES[mesSeleccionado]})</h3>
